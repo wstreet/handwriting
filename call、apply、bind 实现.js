@@ -32,8 +32,8 @@ Function.prototype.myCall = function () {
  */
 
 
-Function.prototype.myAplly = function () {
-  // 判断拥有myAplly的方法是不是函数
+Function.prototype.myApply = function () {
+  // 判断拥有myApply的方法是不是函数
   if (typeof this !== 'function') {
     throw new TypeError(`${this} is not a function`)
 
@@ -57,21 +57,74 @@ Function.prototype.myAplly = function () {
 /**
  * bind实现
  * 注意：bind最终返回一个函数，作为构造函数使用new调用时，不应该改变this指向，
- *      因为newnew绑定优先级高于显示绑定和硬绑定，    
+ *      因为new绑定优先级高于显示绑定和硬绑定，    
  *       new > 显示绑定 > 隐式绑定 > 默认绑定
+ * 
+ * 实现原理：bind实现依赖于call或者apply，绑定过程分三个步骤
+ * 1、返回一个函数
+ * 2、参数绑定
+ * 3、使用new
  * 
  */
 
-// TODO
+// 效果
+function foo(x, y) {
+  console.log(this)
+  this.x = x
+  this.y = y
+}
+
+const obj = {
+  props: '007'
+}
+
+
+const bindFoo = foo.bind(obj, 'hello')
+
+foo(1, 2) // window
+bindFoo('world') // obj
+new bindFoo('newWorld')
+
+// 解释：
+// a步骤：const bindFoo = foo.bind(obj)相当于指定foo内部的this为obj，并返回一个函数
+// b步骤：new bindFoo()，因为new的优先级高于aplly，所以a步骤绑定的this失效，this现在指向new创建的实例
+
+
+
+
+
 Function.prototype.myBind = function () {
   if (typeof this !== 'function') {
     throw new TypeError('Bind must be called on a function')
 
   }
+
   const args = [...arguments]
   const thisArg = args.shift()
-
-  return function (...args) {
-
+  console.log('外层', args)
+  const selfFn = this
+  const concatArgs = [...args, ...arguments]
+  return function F() {
+    console.log(this instanceof F)
+    return this instanceof F
+      ? new selfFn(...concatArgs)
+      : selfFn.apply(thisArg, concatArgs)
   }
 }
+
+// 测试代码
+function foo(x, y) {
+  this.x = x
+  this.y = y
+}
+
+const obj = {
+  props: '007'
+}
+
+
+const bindFoo = foo.myBind(obj, 'hello')
+
+foo(1, 2) // window
+bindFoo('world') // obj
+new bindFoo('newWorld')
