@@ -1,5 +1,5 @@
 
-import {isFuntion} from './utils'
+import { isFuntion } from './utils'
 
 // export
 //  const getType = value => {
@@ -117,18 +117,69 @@ class MyPromise {
   }
 
   // 所有结果fulfilled
-  static all = () => {
+  static all = (promiseList) => {
+    const result = []
+    let count = 0
+    return new MyPromise((resolve, reject) => {
+      for (let index = 0; index < promiseList.length; index++) {
+        const promise = promiseList[index];
+        promise.then(
+          res => {
+            result.push(res)
+            count =+ 1
 
+            if (count === promiseList.length) {
+              resolve(result)
+            }
+          },
+          reason => {
+            reject(reason)
+          }
+        )
+      }
+    })
   }
 
-  // 取先fulfilled的结果
+  // 返回先有结果的promise的值，不管是fulfilled还是rejected
   static race = () => {
-
+    return new MyPromise((resolve, reject) => {
+      for (let index = 0; index < promiseList.length; index++) {
+        const promise = promiseList[index];
+        promise.then(
+          res => {
+            resolve(res)
+          },
+          reason => {
+            reject(reason)
+          }
+        )
+      }
+    })
   }
 
   // 任意一个变成fulfilled，结果是fulfilled
   static any = () => {
+    const result = []
+    let count = 0
+    return new MyPromise((resolve, reject) => {
+      for (let index = 0; index < promiseList.length; index++) {
+        const promise = promiseList[index];
+        promise.then(
+          res => {
+            resolve(res)
+          },
+          reason => {
+            result.push(res)
+            count =+ 1
 
+            if (count === promiseList.length) {
+              reject(reason)
+            }
+            
+          }
+        )
+      }
+    })
   }
 
 }
