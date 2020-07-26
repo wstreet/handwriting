@@ -103,8 +103,8 @@ Function.prototype.myBind = function () {
   const thisArg = args.shift()
   console.log('外层', args)
   const selfFn = this
-  const concatArgs = [...args, ...arguments]
-  return function F() {
+  return function F(...innerArgs) {
+    const concatArgs = [...args, ...arguments]
     console.log(this instanceof F)
     return this instanceof F
       ? new selfFn(...concatArgs)
